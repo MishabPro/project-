@@ -1,0 +1,210 @@
+-------REGISTRATION----------- 
+
+package com.example.university_chat_bot; 
+
+import androidx.appcompat.app.AppCompatActivity; 
+
+import android.content.intent; 
+import android.content.SharedPreferences; 
+import android.os.Bundle; 
+import android. preference.PreferenceManager;
+import android.util.Log; 
+import android. util.Patterns; 
+import android.view.View; 
+import android.widget.Button; 
+import android.widget.EditText; 
+import android.widget.RadioButton; 
+import android.widget. Toast; 
+
+import com.android.volley.Request; 
+import com.android.volley.RequestQueue; 
+import com.android.volley.Response; 
+import com.android.volley.VolleyError; 
+import com.android.volley.toolbox.StringRequest; 
+import com.android.volley.toolbox.Volley; 
+
+import org.json.JSONException; 
+import org.json.JSONObject; 
+
+import java.util. HashMap; 
+import java.util.Map; 
+
+public class Register extends AppCompatactivity
+{ 
+	EditText e1,e2,e3,e4,e5,e6,e7,e8,e9,e10,e11,e12; 
+	Button b1; 
+	String url="",ip="",Gender=""; 
+	RadioButton r1,r2; 
+	SharedPreferences sh; 
+
+@Override 
+protected void onCreate(Bundle savedinstanceState) { 
+Super.onCreate(savedinstanceState); 
+setContentView(R.layout.activity_register); 
+e1=findViewByld(R.id.editTextTextPersonName11); 
+e2=findViewByld(R.id.editTextTextPersonName12); 
+e3=findViewByld(R.id.editTextTextPersonName13); 
+//  e4=findViewByld(R.id.editTextTextPersonName14); 
+e5=findViewByld(R.id.editTextTextPersonName7); 
+e6=findViewByld(R.id.editTextTextPersonName8); 
+e7=findViewByld(R.id.editTextTextPersonName9); 
+e8=findViewByld(R.id.editTextTextPersonName10); 
+e9=findViewByld(R.id.editTextTextPersonName15); 
+e10=findViewByld(R.id.editTextTextPersonName16); 
+e11=findViewByld(R.id.editTextTextPersonName19); 
+r1=findViewByld(R.id.radioButton); 
+r2=findViewByld(R.id.radioButton2); 
+
+e12=findViewByld(R.id.editTextTextPassword2); 
+b1=findViewByld(R.id.button3); 
+sh = PreferenceManager.getDefaultSharedPreferences(getApplicationContext()); 
+
+b1.setOnClickListener(new View.OnClickListener() { 
+@Override 
+public void onClick(View v) { 
+
+	Toast.makeText(getApplicationContext(), "okokok", Toast.LENGTH_LONG).show(); 
+
+	final String Firstname = e1.getText().toString(); 
+	final String LastName = e2.getText().toString(); 
+	final String Age = e3.getText().toString(); 
+	final String Gender = e4.getText().toString(); 
+	final String Courseld = e5.getText().toString(); 
+	final String Place = e6.getText().toString(); 
+	final String Post = e7.getText().toString(); 
+	final String Pin = e8.getText().toString(); 
+	final String Email = e9.getText().toString(); 
+	final String Phone = e10.getText().toString(); 
+	final String Username = e11.getText().toString(); 
+	final String Password = e12.getText().toString(); 
+
+if (r1.isChecked()) { 
+	Gender = r1.getText().toString();	
+	} else if (r2.isChecked()) 
+		{
+		Gender = r2.getText().toString(); 
+	} 
+
+	if (Firstname.equalsIgnoreCase("")) { 
+		e1.setError("Enter first name"); 
+
+	} else if (!Firstname.matches("^[a-zA-Z]*$")) { 
+		e1.setError("characters allowed"); 
+
+	} else if (LastName.equalsIgnoreCase("")) { 
+		e2.setError("Enter last name"); 
+
+	} else if (!LastName.matches("^[a-zA-Z]*$")) { 
+		e2.setError("characters allowed"); 
+	} else if (Age.equalsIgnoreCase("")) { 
+		e3.setError("Enter Age"); 
+	} else if (Courseld.equalsIgnoreCase("")) { 
+		e5.setError("Enter Courseld"); 
+	} else if (Place.equalsIgnoreCase("")) { 
+		e6.setError("Enter Place"); 
+	} else if (Post.equalsignoreCase("")) { 
+		e7.setError("Enter Post"); 
+	} else if (Pin.length() !=6) { 
+		e8.setError("Invalid pincode"); 
+
+	} else if (Phone.equalsignoreCase("")) { 
+		e10.setError("Enter phoneno"); 
+	} else if (Phone.length() !=10) { 
+		e10.setError("Invalid phoneno"); 
+	} else if (Email.equalsIgnoreCase("")) { 
+		e9.setError("Enter email"); 
+	} else if (!Patterns.EMAIL_ADDRESS.matcher(Email).matches()) { 
+		e7.setError("Enter Valid Email");
+		e7.requestFocus(); 
+	} else if (Username.equalsIgnoreCase("")) { 
+		e11.setError("Enter username"); 
+	} else if (Password.equalsIgnoreCase("")) { 
+		e12.setError("Enter password"); 
+	} else if (Password.equalsIgnoreCase("")) { 
+		e12.setError("Confirm password"); 
+	} else { 
+	RequestQueue queue = Volley.newRequestQueue(Register.this); 
+	String url = "http://" + sh.getString("ip","") + ":5000/register"; 
+
+	// Request a string response from the provided URL. 
+
+	StringRequest stringRequest = new StringRequest(Request.Method.POST, url, new Response.Listener<String>() { 
+
+	@Override
+	public void onResponse(String response) { 
+	// Display the response string. 
+	Log.d("+++++++++++++++++", response); 
+	try {	
+	JSONObject json = new JSONObject(response); 
+	String res = json.getString("task"); 
+
+	if (res.equalsIgnoreCase("invalid")) { 
+	Toast.makeText(getApplicationContext(), res, Toast.LENGTH_LONG).show();	
+	} else { 
+	String spl[] = res.split("#"); 
+	String id = spl[0]; 
+	SharedPreferences.Editor ed = sh.edit(); 	
+	ed.putString("lid", id); 
+	ed.putString("type", spl[1]); 
+	ed.commit(); 
+	
+	if (spl[1].equals("user")) { 
+	Intent ik =new Intent(getApplicationContext(), USER_HOME.class); 
+	startActivity(ik); 
+
+	} 
+	else if(spl[1].equals("volunteer")) { 
+	Intent ik = new Intent(getApplicationContext(), Volunteerhome.class); 
+	startActivity(ik); 
+	}
+	else { 
+	Toast.makeText(getApplicationContext(), "Invalid User", 
+	Toast.LENGTH_LONG).show(); 
+} 
+}
+} catch (JSONException e) { 
+e.printStackTrace(); 
+} 
+
+}
+}, new Response. ErrorListener() { 
+@Override 
+public void onErrorResponse(VolleyError error) { 
+
+
+Toast.makeText(getApplicationContext(), "Error" + error, 
+Toast.LENGTH_LONG).show(); 
+
+} 
+
+}){ 
+@Override 
+
+protected Map<String, String> getParams() { 
+	Map<String, String> params = new HashMap<>(); 
+	params.put("FirstName", Firstname); 
+	params.put("LastName", LastName); 
+	params.put("Age", Age); 
+	params.put("Gender", Gender); 
+	params.put("Courseld", Courseld); 
+	params.put("Place", Place); 
+	params.put("Post", Post); 
+	params.put("Pin", Pin); 
+	params.put("Email", Email); 
+	params.put("Phone", Phone); 
+	params.put("Username", Username); 
+	params.put("Password", Password); 
+
+
+return params; 
+}
+}; 
+// Add the request to the RequestQueue. 
+queue.add(stringRequest); 
+}
+}
+
+}); 
+}
+}
+

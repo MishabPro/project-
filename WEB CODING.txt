@@ -1,0 +1,363 @@
+--------- WEB CODING------ 
+
+import os
+from flask import * 
+import pymysql 
+from werkzeug.utils import secure_filename 
+
+app=Flask(_name_)
+con=pymysql.connect(host='localhost', port=3306,user='root',passwd='',db='university chat bot 2') 
+cmd=con.cursor() 
+app.secret_key='ab' 
+@app.route('/') 
+def sign(): 
+	return render_template("Admin 1.1/login.html") 
+	# return render_template("Admin 1.1/login.html") 
+@app.route('/login', methods=['post']) 
+def login(): 
+un=request.form['textfield'] 
+pswd=request.form['textfield2'] 
+cmd.execute("select * from login where user_name='" + un + "' and password='" +pswd+"'") 
+s=cmd.fetchone() 
+if s is None: 
+	return'"<script>alert("invalid username and password");window.location="/"</script>"' 
+elif s[3] =="admin": 
+	return '"<script>alert("success");window.location="/Admin_home"</script>"' 
+elif s[3] =="department": 
+	session['lid']=s[0] 
+	return '"<script>alert("success");window.location="/department_home"</script>"'
+
+
+else: 
+	return '"<script>alert("invalid username and password");window.location="/"</script>"' 
+@app.route('/Admin_home') 
+def Admin_home(): 
+	return render_template("Admin 1.1/Admin home.html") 
+
+@app.route('/add_course’) 
+def add_course(): 
+	cmd.execute("select * from college") 
+	s=cmd.fetchall() 
+	cmd.execute("SELECT * FROM 'department'") 
+	v=cmd.fetchall() 
+	return render_template("Admin 1.1/add course.html",val=s,val1=v) 
+
+@app.route('/add_course2',methods=['post']) 
+def add_course2(): 
+	cid= request.form['select'] 
+	did= request.form['select’] 
+	Course = request.form['textfield’] 
+	description= request.form|'textfield1'] 
+	cmd.execute("insert into course values(null,'" + cid + "','" + did+ "','" + Course+ "','" +description + "')") 
+	con.commit() 
+	return '"<script>alert("course added successfuly ");window.location="/Admin_home"</script>"' 
+
+@app.route('/add_department') 
+def add_department(): 
+cmd.execute("select * from college") 
+S = cmd.fetchall()
+return render_template("Admin 1.1/add department.html",val1=s) 
+@app.route('/add_department1',methods=['post']) 
+def add_department1(): 
+	cid=request.form['select'] 
+	department=request.form['textfield2'] 
+	uname=request.form['textfield'] 
+	pwd=request.form['textfield3'] 
+	cmd.execute(" insert into login values(null,'"+uname+"','"+pwd+"','department')") 
+	id=con.insert_id() 
+	cmd.execute("insert into department values('"+str(id)+"','" + cid + "','" + department + "')") 
+	con.commit() 
+
+return '"<script>alert("Department is added successfuly ");window.location="/Admin_home"</script>"' 
+
+@app.route('/Add_college1', methods=['post'])
+ def Add_college1(): 
+return render_template("Admin 1.1/Add college.html") 
+
+@app.route('/Add_college', methods=['post']) 
+def Add_college(): 
+College_Name = request.form['textfield'] 
+Contact = request.form['textfield2'] 
+Place = request.form['textfield3'] 
+Post = request.form['textfield4'] 
+Pin = request.form['textfield5'] 
+District = request.form['select'] 
+Email = request.form['textfield6'] 
+cmd.execute("insert into college values(null,'"+ College_Name +"','" + Contact +"','" +Place + "','" +Post+"','"+Pin+"','"+ District +"','"+ Email+"')") 
+con.commit() 
+return '"<script>alert("successfully registered");window.location="/Manage_college"</seript>"' 
+
+@app.route('/Manage_college') 
+def Manage_college(): 
+	cmd.execute("select * from college")
+	s=cmd.fetchall() 
+	return render_template("Admin 1.1/Manage college.html",val=s)
+
+@app.route('/Edit_college')
+def Edit_college():
+	id=request.args.get('id') 
+	session['cid']=id 
+	cmd.execute("select * from college where cid='"+str(id)+"'")
+	s = cmd.fetchone() 
+	print(s)
+	return render_template("Admin 1.1/Edit college.html",val=s)
+
+@app.route('/update_college’, methods=['post'])
+def update_college():
+	College_Name = request.form['textfield'] 
+	Contact = request.form['textfield2']
+	Place = request.form['textfield3'] 
+	Post = request.form['textfield4'] 
+	Pin = request.form['textfield5'] 
+	District = request.form['select'] 
+	Email = request.form['textfield6'] 
+cmd.execute("update college set College_Name='"+ College_Name + "',Contact='" + Contact + "' Place='" +Place + "',Post='" + Post + "',Pin='" + Pin + "' ,District='" + District + "',Email='" + Email +"' where cid='"+str(session['cid'])+"'") 
+con.commit() 
+return '"<script>alert("successfully Edited");window.location="/Manage_college"</script>"' 
+
+@app.route('/Delete_college') 
+def Delete_college(): 
+	id=request.args.get('id') 
+	cmd.execute("delete from college where cid='"+str(id)+"'") 
+	return '"<script>alert("successfully Deleted");window.location="/Manage_college"</script>"' 
+
+@app.route('/add_exam_notification') 
+def add_exam_notification(): 
+cmd.execute("select * from course") 
+s=cmd.fetchall() 
+return render_template("Admin 1.1/add exam notification.html",val=s) 
+
+@app.route('/add_exam_notification1',methods=['post']) 
+def add_exam_notification1(): 
+	Semester=request.form['select2']
+	print(Semester) 
+	Course=request.form['select']
+	Exam_Name=request.form['textfield3']
+	Details=request.form['textfield2'] 
+	cmd.execute("insert into exam_notification values(null,'" + Semester +"','" + Course + "','" + Exam_Name + "','" + Details + "',curdate())") 
+	con.commit() 
+	return ''<script>alert("Exam notification is added succesfully");window.location="/Admin_home"</script>""
+
+@app.route('/Add_fee_structure',methods=['post']) 
+def Add_fee_structure(): 
+	cmd.execute("select * from course") 
+	s=cmd.fetchall() 
+	cmd.execute("select * from exam_notification") 
+	t=cmd.fetchall() 
+	return render_template("Admin 1.1/Add fee structure. html", val=s,val2=t) 
+
+@app.route('/Add_fee_structure1',methods=['post']) 
+def add_fee_structure1(): 
+	Cid=request.form['select']
+	Exam=request.form['select2'] 
+	Fee=request.form['textfield'] 
+	cmd.execute("insert into fee values(null,'" + Cid + "','" + Exam + "','" + Fee + "')") 
+	con.commit() 
+	return '"<script>alert("Exam fee is added succesfully");window.location="/Manage_Fee_structure"</script>"' 
+
+@app.route('/Manage_Fee_structure') 
+def Manage_fee_structure(): 
+cmd.execute("SELECT fee.*,course.`course`,`exam_notification`.`Exam_name` FROM `fee` JOIN `course` ON `fee`. `Cid`=`course`.`courseid` JOIN `exam_notification` ON `fee`. `Exam`=`exam_notification`.`Nid`") 
+s = cmd.fetchall() 
+return render_template("Admin 1.1/Manage fee structure.html", val=s) 
+
+@app.route('/Edit_fee') 
+def Edit_fee(): 
+	id=request.args.get('id') 
+	session['fee_id']=id 
+	cmd.execute("select * from fee where fee_id='"+str(id)+"'") 
+	s= cmd.fetchone() 
+	cmd.execute("select * from course") 
+	t = cmd.fetchall() 
+	cmd.execute("select * from exam_notification ") 
+	u = cmd.fetchall() 
+	print(s) 
+	# print(t) 
+	# print(u) 
+	return render_template("Admin 1.1/Edit fee.html",val=s,val1=t,val2=u) 
+
+@app.route('/update_fee', methods=['post']) 
+def update_fee(): 
+	Course = request.form['select'] 
+	Exam = request.form['select'] 
+	Fee= request.form['textfield'] 
+	cmd.execute("update fee set Cid='"+ Course+"',Exam='"+Exam+"',Fee+'"+Fee+"' where fee_id='"+str(session['fee_id'])+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Edited");window.location="/Manage_Fee_structure"</script>"' 
+
+@app.route('/Delete_fee') 
+def Delete_fee(): 
+	id=request.args.get('id') 
+	cmd.execute("delete from fee where cid='"+str(id)+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Deleted");window.location="/Manage_Fee_structure"</script>"' 
+
+
+@app.route('/Add_instructions', methods=['post']) 
+def Add_Instructions(): 
+	return render_template('Admin 1.1/Add Instructions.html') 
+
+@app.route('/Add_Instructions1', methods=['post']) 
+def Add_Instructions1(): 
+	instruction=request.form['textfield'] 
+	cmd.execute("insert into instruction values(null,'" + instruction + "',curdate())") 
+	con.commit() 
+	return '"<script>alert("Instructions added succesfully");window.location="/Manage_instruction"</script>"' 
+
+@app.route('/Manage_instruction') 
+def Manage_instruction(): 
+	cmd.execute("select * from instruction") 
+	s = cmd.fetchall() 
+	print(s) 
+	return render_template("Admin 1.1/Manage instructions.html",val=s) 
+
+@app.route('/Edit_instruction') 
+def Edit_instruction(): 
+	id=request.args.get('id') 
+	session['id']=id 
+	cmd.execute("select * from instruction where id='"+ str(id) +"'") 
+	s = cmd.fetchone() 
+	print(s)
+	return render_template("Admin 1.1/edit instruction.html",val=s) 
+
+@app.route('/update_instruction', methods=['post']) 
+def update_instruction(): 
+	instruction= request.form['textfield'] 
+	cmd.execute("update instruction set instruction='"+ instruction +"' where id='"+str(session['id'])+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Edited");window.location="/Manage_instruction"</script>"' 
+
+@app.route('/Delete_instruction') 
+def Delete_instruction(): 
+	id=request.args.get('id') 
+	cmd.execute("delete from instruction where id='"+str(id)+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Deleted");window.location="/Manage_instruction"</script>"' 
+
+@app.route('/Extra_activity', methods=['post']) 
+def Extra_activity(): 
+	return render_template("Admin 1.1/Extra activity.html") 
+
+@app.route('/Add_Extra_activity',methods=['post']) 
+
+def Add_Extra_activity(): 
+	extra_activity=request.form|'textfield'] 
+	cmd.execute("insert into extra_activity values(null,'" + extra_activity + "')") 
+	con.commit() 
+	return '"<script>alert("Extra Activity added succesfully");window.location="/Manage_Extra_activity"</script>"' 
+
+@app.route('/Manage_Extra_activity') 
+def Manage_Extra_activity(): 
+	cmd.execute("select * from extra_activity ") 
+	s = cmd.fetchall() 
+	return render_template("Admin 1.1/Manage Extra activity.html", val=s) 
+
+@app.route('/Delete_Extra_activity') 
+def Delete_Extra_activity(): 
+	eid=request.args.get('id') 
+	cmd.execute("delete from extra_activity where eid='"+str(eid)+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Deleted"); window.location="/Manage_Extra_activity"</script>"' 
+
+@app.route('/view_complaints_and_post_reply') 
+def view_complaints_and_post_reply(): 
+	cmd.execute(" SELECT complaint. *, register. * FROM register JOIN complaint ON register.Lid = complaint.user_id WHERE complaint.reply = 'pending' ") 
+	v =cmd.fetchall() 
+	return render_template("Admin 1.1/view complaints and post reply.html",val1=v) 
+
+@app.route('/view_feedback') 
+def view_feedback(): 
+	cmd.execute(" SELECT feedback. *, register. * FROM register JOIN feedback ON register.Lid = feedback.user_id ") 
+	v = cmd.fetchall() 
+	return render_template("Admin 1.1/view feedback.html",val2=v) 
+
+@app.route('/view_students') 
+def view_students(): 
+	cmd.execute("SELECT student. *, register. * FROM register JOIN student ON register.Lid = student.lid") 
+	v= cmd.fetchall() 
+	return render_template("Admin 1.1/view students.html",val3=v) 
+
+@app.route('/department_home') 
+def department_home(): 
+	return render_template("Department 1.2/department home.html") 
+
+@app.route('/Add_syllabus',methods=['get']) 
+def Add_syllabus(): 
+	cmd.execute("SELECT * FROM `department` ") 
+	v = cmd.fetchall() 
+	cmd.execute(" SELECT * FROM 'course'") 
+	w = cmd.fetchall() 
+	return render_template("Department 1.2/Add syllabus.html",val=v,val1=w) 
+
+@app.route('/Add_syllabus1',methods=['post']) 
+def Add_syllabus1(): 
+	department=request.form['select'] 
+	course=request.form['select2'] 
+	Syllabus=request.files['file'] 
+	file=secure_filename(Syllabus.filename) 
+	Syllabus.save(os.path.join("static/Syllabus",file)) 
+	cmd.execute("insert into Syllabus values(null,'" + course + "','" + file + "','" + department + "')") 
+	con.commit() 
+	return '"<script>alert(" Syllabus added succesfully");window.location="/department_home"</script>"' 
+
+@app.route('/Manage_syllabus') 
+def Manage_syllabus(): 
+cmd.execute("SELECT `syllabus`.*, `course`. `course`, `department`.`department` FROM `department` INNER JOIN `syllabus` ON `syllabus`. `did`=`department`.`id` INNER JOIN `course` ON 
+`course`. `courseid`=`syllabus`.`Cid`") 
+s=cmd.fetchall() 
+return render_template("Department 1.2/Manage syllabus. html",val=s) 
+
+@app.route('/Delete_Syllabus') 
+
+def Delete_Syllabus(): 
+	Syllabus_id=request.args.get('id') 
+	cmd.execute("delete from Syllabus where Syllabus_id='"+str(Syllabus_id)+"'") 
+con.commit() 
+	return '"<script>alert("successfully Deleted");window.location="/Manage_syllabus"</script>"' 
+
+@app.route('/answer') 
+def answer(): 
+	return render_template("Department 1.2/answer.html") 
+
+@app.route('/answer1',methods=['post']) 
+def answer1(): 
+	Query=request.form['textfield'] 
+	Answer=request.form['textfield2'] 
+	cmd.execute("insert into query values(null,'" + Query +"','"+str(session['lid'])+"',curdate(),'" + Answer + "')") 
+	con.commit() 
+	return '"<script>alert("Queries added succesfully");window.location="/department_home"</script>"' 
+
+@app.route('/answer_to_the_queries') 
+def answer_to_the_queries(): 
+	cmd.execute("SELECT query. *, register. * FROM register JOIN QUERY ON register.Lid = query.User_id ") 
+	s = cmd.fetchall() 
+	return render_template("Department 1.2/answer to the queries.html",val=s) 
+
+@app.route('/view_student_approve_reject',methods=['post',''get']) 
+def view_student_approve_reject(): 
+	cmd.execute("SELECT student.*,course.`course`, `login`. FROM course JOIN student ON Student.cid=course.cid JOIN `login` ON `login`.`id`=`student`.`lid` WHERE `login`.type='pending' ") 
+	u = cmd.fetchall() 
+	return render_template("Department 1.2/view student approve reject.html",val=u) 
+
+# @app.route('/approve_student') 
+#def approve_student(): 
+#return render_template("Department 1.2/view student approve reject.html") 
+
+@app.route('/approve_student1',methods=['get','post']) 
+def approve_student1(): 
+	id=request.args.get('lid') 
+	session['id']=id 
+	print(id) 
+	cmd.execute("update login set login.type='student' where id='"+str(session['id'])+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Approved");window.location="/view_student_approve_reject"</script>"' 
+
+@app.route('/reject_student', methods=['get', 'post']) 
+def reject_student(): 
+	id=request.args.get('id') 
+	cmd.execute("delete from login where login.id='"+str(session['id'])+"'") 
+	cmd.execute("delete from student where student.lid='"+str(id)+"'") 
+	con.commit() 
+	return '"<script>alert("successfully Rejected");window.location="/view_student_approve_reject"</script>" 
+	app.run(debug=True) 
+
